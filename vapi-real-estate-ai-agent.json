@@ -1,0 +1,413 @@
+{
+  "name": "vapi-real-estate-ai-agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vapi-appointment-setter-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        192
+      ],
+      "id": "fa894c58-5559-4ea4-8d1f-afce5efbd240",
+      "name": "VAPI Tool Call Webhook",
+      "webhookId": "7d471180-2ee0-48d5-8d07-9222404029a3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebe19482-a84c-4203-a1dc-b17b9d9baa59",
+              "name": "ownerName",
+              "value": "the Apex Realty team",
+              "type": "string"
+            },
+            {
+              "id": "2212ceff-e310-457e-9e94-3594133c448c",
+              "name": "businessName",
+              "value": "Apex Realty",
+              "type": "string"
+            },
+            {
+              "id": "c8e84fa9-c5d0-4eef-a893-e2b72362ac1b",
+              "name": "serviceName",
+              "value": "free consultation",
+              "type": "string"
+            },
+            {
+              "id": "3d403d58-bb41-429c-a81c-39bd16f910c8",
+              "name": "timeZone",
+              "value": "America/New York",
+              "type": "string"
+            },
+            {
+              "id": "4948b87d-6b64-4d05-87d9-6c565913744d",
+              "name": "workdayStartHour",
+              "value": 8,
+              "type": "number"
+            },
+            {
+              "id": "e2bd773a-cf9e-42e0-86ac-a92f4e86bc5e",
+              "name": "workdayEndHour",
+              "value": 18,
+              "type": "number"
+            },
+            {
+              "id": "6469c12d-2928-491e-add3-a2188f2fb4b5",
+              "name": "meetingDurationMinutes",
+              "value": 15,
+              "type": "number"
+            },
+            {
+              "id": "814eaa83-f34e-4ff7-a5b1-6fe179f42623",
+              "name": "bookingCadenceMinutes",
+              "value": 30,
+              "type": "number"
+            },
+            {
+              "id": "7a6cc911-84f5-480e-b07d-2900cdf0bdc6",
+              "name": "bufferBeforeMeetings",
+              "value": 15,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        192
+      ],
+      "id": "45a3e54c-83d1-4a5e-8d91-526191114e42",
+      "name": "Variables"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "checkAvailability",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4b87ccc3-d060-4206-bd63-b53d1970550d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "checkAvailability"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3d20b240-e1b1-45c3-a257-d697fa79c0b8",
+                    "leftValue": "={{ $json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "bookAppointment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bookAppointment"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "806cf744-15ad-4922-8de3-8bbd5cbf399e",
+                    "leftValue": "={{ $json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "qualifyRealEstateLead",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "qualifyLead"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -224,
+        176
+      ],
+      "id": "12bde8ee-5c1f-4802-ba04-dbee7710144c",
+      "name": "Route by Tool Name"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node reads its settings from its direct input. Do not edit.\nconst potentialSlots = [];\n\n// The config data is in the '$json' object, which is this node's input. \nconst config = $json;\n\nconst initialISO = $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.initialSearchDateTime;\n\nconst datePart = initialISO.split('T')[0];\nconst offsetPart = initialISO.slice(-6);\n\n// This code correctly converts the numbers (e.g., 8) into two-digit strings(e.g., \"08\")\nconst startHourString = String(config.workdayStartHour).padStart(2, '0');\nconst endHourString = String(config.workdayEndHour).padStart(2, '0');\n\nconst workdayStartISO = `${datePart}T${startHourString}:00:00${offsetPart}`;\nconst workdayEndISO = `${datePart}T${endHourString}:00:00${offsetPart}`;\n\nlet currentSlot = new Date(workdayStartISO)\nconst endOfWorkday = new Date(workdayEndISO)\n\nwhile (currentSlot.getTime() < endOfWorkday.getTime()) {\n  const slotEnd = new Date(currentSlot.getTime() + config.bookingCadenceMinutes * 60000);\n  potentialSlots.push{{\n    start: currentSlot.toISOString(),\n    end: slotEnd.toISOString(),\n  }};\n  currentSlot = slotEnd;\n}\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "543c602a-48bd-47e7-8979-918fdaaa58fb",
+      "name": "Internal: Calculate Potential Spots"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "joj167879@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joj167879@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.initialSearchDateTime }}",
+        "timeMax": "={{ DateTime.fromISO($('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.initialSearchDateTime).endOf('day').toISO() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "348d91bc-a703-4e61-bae1-fbf1201f27b7",
+      "name": "Get Google Calendar Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cP13GAvjBeL0qWuL",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get configuration from the Calculate Potential Slots node\nconst config = $('Internal: Calculate Potential Spots').item.json;\nconst potentialSlots = config.potentialSlots;\n\n// Get all busy events from Google Calendar\nconst busyEvents = $('Get Google Calendar Events').all();\n\n// Get the toolCallId to pass along in the response\nconst toolCallId = $('VAPI Tool Call Webhook').first().json.body.message.toolCalls[0].id;\n\n// Create busy intervals with buffer time before and after each event\nconst busyIntervals = busyEvents.map(event => {\n  const start = new Date(event.json.start.dateTime);\n  const end = new Date(event.json.end.dateTime);\n  const startWithBuffer = new Date(start.getTime() - config.bufferBeforeMeetings * 60000);\n  const endWithBuffer = new Date(end.getTime() + config.bufferBeforeMeetings * 60000);\n  return { start: startWithBuffer, end: endWithBuffer };\n});\n\n// Filter potential slots to find available ones\nconst availableSlots = potentialSlots.filter(slot => {\n  const meetingStart = new Date(slot.start);\n  const meetingEnd = new Date(meetingStart.getTime() + config.meetingDurationMinutes * 60000);\n  \n  // Check if this slot conflicts with any busy interval\n  const hasConflict = busyIntervals.some(busy => {\n    return meetingStart < busy.end && meetingEnd > busy.start;\n  });\n  \n  return !hasConflict;\n});\n\n// Format the available slots for the response\nconst formattedSlots = availableSlots.map(slot => {\n  const startTime = new Date(slot.start);\n  return {\n    startDateTime: slot.start,\n    displayTime: startTime.toLocaleTimeString('en-US', { \n      hour: 'numeric', \n      minute: '2-digit',\n      hour12: true \n    })\n  };\n});\n\n// Return the result in the format expected by VAPI\nreturn [{\n  json: {\n    results: [{\n      toolCallId: toolCallId,\n      result: {\n        availableSlots: formattedSlots,\n        message: formattedSlots.length > 0 \n          ? `I found ${formattedSlots.length} available time slots.`\n          : 'No available slots found for this day.'\n      }\n    }]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "1eb9115a-8234-45be-a7e0-7735643ca813",
+      "name": "Internal: Filter for Available Slots"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "joj167879@gmail.com",
+          "mode": "list",
+          "cachedResultName": "joj167879@gmail.com"
+        },
+        "start": "={{ $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.startDateTime }}",
+        "end": "={{ $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.endDateTime }}",
+        "additionalFields": {
+          "description": "=Client Contact: \nName: {{  $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.clientName }}\n\nPhone: {{  $('VAPI Tool Call Webhook').item.json.body.message.customer.number }}\n\nQualification Details: \nTransaction Type: {{ JSON.parse($('VAPI Tool Call Webhook').item.json.body.message.artifact.messages.find(m => m.role === 'tool_calls' && m.toolcalls[0].function.name === 'qualifyRealEstateLead').toolCalls[0].function.arguments).t}}",
+          "summary": "={{ $('1. Variables').item.json.businessName }} Consultation: {{  $('VAPI Tool Call Webhook').item.json.body.message.toolCalls[0].function.arguments.clientName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        192
+      ],
+      "id": "4309e338-bf06-4ede-992c-69b409f5ffa4",
+      "name": "Book Appointment in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cP13GAvjBeL0qWuL",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        672,
+        0
+      ],
+      "id": "f99082c3-86c5-4328-b53f-05de354db745",
+      "name": "Internal: Respond with Available Times"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        384
+      ],
+      "id": "af2c49ed-44a5-4c7d-8cfe-e857e2b74653",
+      "name": "Internal: Respond with Qualification"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        192
+      ],
+      "id": "b3268828-a207-4560-bf6f-abdf5c00612b",
+      "name": "Internal: Respond with Booking Confirmation"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "VAPI Tool Call Webhook": {
+      "main": [
+        [
+          {
+            "node": "Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variables": {
+      "main": [
+        [
+          {
+            "node": "Route by Tool Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Tool Name": {
+      "main": [
+        [
+          {
+            "node": "Internal: Calculate Potential Spots",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Book Appointment in Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Internal: Respond with Qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Internal: Calculate Potential Spots": {
+      "main": [
+        [
+          {
+            "node": "Get Google Calendar Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Google Calendar Events": {
+      "main": [
+        [
+          {
+            "node": "Internal: Filter for Available Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Internal: Filter for Available Slots": {
+      "main": [
+        [
+          {
+            "node": "Internal: Respond with Available Times",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Appointment in Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Internal: Respond with Booking Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "55ea5d5c-8db2-4916-827a-fa377cc09e55",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b9da1106f3ec39e82c665d6355e964b8f60161801c3d31632f82f96007006f12"
+  },
+  "id": "xJti0Ol26dBZOVsV",
+  "tags": []
+}
