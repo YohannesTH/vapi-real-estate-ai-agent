@@ -49,3 +49,24 @@ Response: The agent replies instantly with available times, confirmation, or qua
 Below is the workflow definition file:
 
 File: vapi-real-estate-ai-agent.json
+
+📁 Project Structure
+📦 vapi-real-estate-voice-agent
+ ┣ 📜 README.md
+ ┣ 📜 vapi-real-estate-ai-agent.json
+
+🧠 How It Works
+
+Webhook Trigger: The voice agent receives client input through the VAPI Tool Call Webhook.
+
+Routing Logic: The flow routes requests by intent (availability, booking, or qualification).
+
+Integration: Uses Google Calendar API to read and create events dynamically.
+
+Response: The agent replies instantly with available times, confirmation, or qualification info.
+
+## 📘 Workflow JSON
+
+You can view the full workflow configuration here:  
+➡️ [vapi-real-estate-ai-agent.json](./vapi-real-estate-ai-agent.json)
+
